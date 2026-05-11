@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "claims")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor(access = lombok.AccessLevel.PROTECTED) @Builder
 public class Claim {
 
     @Id
@@ -28,6 +28,7 @@ public class Claim {
     @Column(nullable = false)
     private ClaimStatus status;
 
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
