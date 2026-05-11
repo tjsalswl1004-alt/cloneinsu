@@ -6,6 +6,7 @@ import com.cloneinsu.dto.ClaimStatsResponse;
 import com.cloneinsu.entity.ClaimStatus;
 import com.cloneinsu.service.ClaimService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +39,7 @@ public class ClaimController {
 
     @PostMapping
     public ResponseEntity<ClaimResponse> createClaim(@RequestBody ClaimRequest request) {
-        return ResponseEntity.ok(claimService.createClaim(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(claimService.createClaim(request));
     }
 
     @PutMapping("/{id}")
