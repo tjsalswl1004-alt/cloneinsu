@@ -19,7 +19,7 @@ export default function ClaimCard({ claim }) {
           className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold"
           style={{ backgroundColor: logoColor }}
         >
-          {insuranceCompany.slice(0, 2)}
+          {insuranceCompany?.slice(0, 2) ?? '??'}
         </div>
         <div>
           <p className="font-semibold text-gray-900">{patientName}</p>
