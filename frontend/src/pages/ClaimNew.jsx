@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { claimService } from '../services/claimService';
 
 const INSURANCE_COMPANIES = ['한화손해보험', '삼성생명', 'DB손해보험', '메리츠화재', '교보생명', '현대해상'];
 
@@ -19,8 +20,18 @@ export default function ClaimNew() {
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
   const handleSubmit = () => {
-    alert('청구가 접수되었습니다.');
-    navigate('/claims');
+    claimService.create({
+      patientName: form.patientName,
+      insuranceCompany: form.insuranceCompany,
+      claimDate: form.treatmentDate,
+      amount: Number(form.amount),
+      status: 'SENT',
+    })
+    .then(() => {
+      alert('청구가 접수되었습니다.');
+      navigate('/claims');
+    })
+    .catch(() => alert('청구 접수에 실패했습니다.'));
   };
 
   return (
