@@ -21,3 +21,11 @@ export const claimService = {
   getStats: () =>
     api.get('/claims/stats').then((r) => r.data),
 };
+
+export const insuranceCompanyService = {
+  getAll: () =>
+    api.get('/insurance-companies').then((r) => r.data),
+
+  getByCategory: (category) =>
+    api.get('/insurance-companies', { params: { category } }).then((r) => r.data),
+};
