@@ -1,8 +1,8 @@
-# 빌드 단계 — JDK로 컴파일
-FROM eclipse-temurin:17-jdk AS builder
+# 빌드 단계 — Gradle 8.5 + JDK 17
+FROM gradle:8.5-jdk17 AS builder
 WORKDIR /app
 COPY . .
-RUN chmod +x ./gradlew && ./gradlew bootJar -x test
+RUN gradle bootJar -x test --no-daemon
 
 # 실행 단계 — JRE만으로 가볍게 실행
 FROM eclipse-temurin:17-jre
