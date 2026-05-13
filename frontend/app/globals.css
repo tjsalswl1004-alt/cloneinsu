@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #4F6EF7;
+  --color-primary-dark: #3B5BDB;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #F7F8FC;
+  color: #1a1a1a;
+}
+
+button {
+  font-family: inherit;
+}
