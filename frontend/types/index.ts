@@ -65,3 +65,24 @@ export interface ClaimStats {
   paid: number;
   completionRate: number;
 }
+
+export type UserRole = 'authenticated' | 'unauthenticated' | 'admin';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
+export type MenuKey = 'claim' | 'analysis' | 'review' | 'design';
+
+export interface MenuItem {
+  key: MenuKey;
+  label: string;
+  description: string;
+  path: string;
+  accentColor: string;
+  bgColor: string;
+}
+

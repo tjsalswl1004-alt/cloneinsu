@@ -1,10 +1,12 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import BottomNav from "@/components/BottomNav";
+import type { Metadata } from 'next';
+import './globals.css';
+import BottomNav from '@/components/BottomNav';
+import ConditionalLayout from '@/components/ConditionalLayout';
+import { AuthProvider } from '@/components/providers/AuthProvider';
 
 export const metadata: Metadata = {
-  title: "FIELDARENA",
-  description: "설계사의 현장, 필드아레나",
+  title: 'FIELDARENA',
+  description: '설계사의 현장, 필드아레나',
 };
 
 export default function RootLayout({
@@ -14,13 +16,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>
-        <div className="min-h-screen max-w-lg mx-auto" style={{backgroundColor: '#F7F8FC'}}>
-          <div className="pb-20">
-            {children}
-          </div>
+      <body className="min-h-screen bg-bg-main text-text-primary">
+        <AuthProvider>
+          <ConditionalLayout>{children}</ConditionalLayout>
           <BottomNav />
-        </div>
+        </AuthProvider>
       </body>
     </html>
   );

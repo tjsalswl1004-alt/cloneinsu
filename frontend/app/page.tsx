@@ -1,170 +1,182 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import AppHeader from '@/components/AppHeader';
+import AuthBanner from '@/components/AuthBanner';
+import MenuCardGrid from '@/components/MenuCardGrid';
+import Badge from '@/components/ui/Badge';
+import { useAuth } from '@/components/providers/AuthProvider';
 import { claimService } from '@/lib/api';
-import type { Claim, ClaimStats } from '@/types';
-import ClaimCard from '@/components/ClaimCard';
-import StatsSummary from '@/components/StatsSummary';
-import Header from '@/components/Header';
+import type { Claim, MenuKey } from '@/types';
 
-interface SecondaryMenuItem {
-  label: string;
-  path: string;
-  iconBg: string;
-  iconColor: string;
-  icon: (color: string) => React.JSX.Element;
-}
-
-const SECONDARY_MENUS: SecondaryMenuItem[] = [
-  {
-    label: '청구내역', path: '/claims',
-    iconBg: '#EDE9FF', iconColor: '#7B61FF',
-    icon: (c) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-        <line x1="16" y1="13" x2="8" y2="13"/>
-        <line x1="16" y1="17" x2="8" y2="17"/>
-      </svg>
-    ),
-  },
-  {
-    label: '서류안내', path: '/documents',
-    iconBg: '#E0F7F5', iconColor: '#38B2AC',
-    icon: (c) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="9" y="2" width="6" height="4" rx="1"/>
-        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-        <line x1="9" y1="12" x2="15" y2="12"/>
-        <line x1="9" y1="16" x2="13" y2="16"/>
-      </svg>
-    ),
-  },
-  {
-    label: '실비계산기', path: '/calculator',
-    iconBg: '#FFE8EC', iconColor: '#E8557A',
-    icon: (c) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="2" width="16" height="20" rx="2"/>
-        <line x1="8" y1="6" x2="16" y2="6"/>
-        <line x1="8" y1="10" x2="8" y2="10" strokeWidth="2.5"/>
-        <line x1="12" y1="10" x2="12" y2="10" strokeWidth="2.5"/>
-        <line x1="16" y1="10" x2="16" y2="10" strokeWidth="2.5"/>
-        <line x1="8" y1="14" x2="8" y2="14" strokeWidth="2.5"/>
-        <line x1="12" y1="14" x2="12" y2="14" strokeWidth="2.5"/>
-        <line x1="16" y1="14" x2="16" y2="14" strokeWidth="2.5"/>
-        <line x1="8" y1="18" x2="8" y2="18" strokeWidth="2.5"/>
-        <line x1="12" y1="18" x2="12" y2="18" strokeWidth="2.5"/>
-        <line x1="16" y1="18" x2="16" y2="18" strokeWidth="2.5"/>
-      </svg>
-    ),
-  },
-];
-
-export default function Home() {
+export default function HomePage() {
   const router = useRouter();
+  const { user, isAuthenticated, isUnauthenticated, setRole } = useAuth();
   const [claims, setClaims] = useState<Claim[]>([]);
-  const [stats, setStats] = useState<ClaimStats | null>(null);
-  const [activeTab, setActiveTab] = useState<'my' | 'all'>('my');
-  const today = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'long' });
 
   useEffect(() => {
-    claimService.getAll().then(setClaims).catch(console.error);
-    claimService.getStats().then(setStats).catch(console.error);
+    claimService
+      .getAll()
+      .then((data) => setClaims(data.slice(0, 2)))
+      .catch(() => setClaims([]));
   }, []);
 
-  const recentClaims = claims.slice(0, 3);
-  const todayCount = claims.filter(
-    (c) => c.createdAt?.startsWith(new Date().toISOString().split('T')[0])
-  ).length;
+  const unlockedKeys: MenuKey[] = isAuthenticated
+    ? ['claim', 'analysis', 'review', 'design']
+    : ['claim'];
+
+  const greetingName = user?.name ?? '설계사';
 
   return (
     <>
-      <Header />
-      <div className="p-4 space-y-3">
-        {/* 인사말 + 퀵메뉴 */}
-        <div className="bg-white rounded-2xl p-4">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <p className="text-xs text-gray-400 mb-1">{today}</p>
-              <h1 className="text-xl font-bold text-gray-900">대표님, 안녕하세요</h1>
-              <div className="inline-flex items-center gap-1 mt-2 px-3 py-1 bg-white border border-gray-200 rounded-full font-bold text-gray-600" style={{fontSize:'10px'}}>
-                <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
-                오늘 {todayCount}건 청구했어요
-              </div>
-            </div>
-            <img src="/greeting-characters.png" alt="캐릭터" className="w-44 object-contain" style={{mixBlendMode: 'multiply'}} />
-          </div>
+      <AppHeader />
 
-          <div className="grid grid-cols-4 gap-2">
-            <button onClick={() => router.push('/insurance-select')} className="w-full aspect-square bg-primary rounded-2xl shadow-sm flex flex-col items-center justify-center gap-1">
-              <span className="text-white text-3xl font-thin leading-none">+</span>
-              <span className="text-xs font-medium text-white">청구하기</span>
-            </button>
-            {SECONDARY_MENUS.map((menu) => (
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 lg:py-6 space-y-5 lg:space-y-6">
+        {/* 인증 유도 배너 (미인증 시) */}
+        {isUnauthenticated && <AuthBanner />}
+
+        {/* 인사말 + 배지 */}
+        <div>
+          <Badge variant={isAuthenticated ? 'auth' : 'unauth'} className="mb-2">
+            {isAuthenticated ? '인증 설계사' : '미인증 설계사'}
+          </Badge>
+          <h1 className="text-2xl lg:text-3xl font-bold text-text-primary">
+            안녕하세요, {greetingName} 설계사님
+          </h1>
+        </div>
+
+        {/* 4개 메뉴 카드 그리드 */}
+        <MenuCardGrid unlockedKeys={unlockedKeys} />
+
+        {/* 하단 2단 레이아웃 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          {/* 좌측: 최근 청구 현황 */}
+          <section className="bg-bg-surface rounded-2xl border border-border shadow-card p-5 lg:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-text-primary text-base lg:text-lg">최근 청구 현황</h2>
               <button
-                key={menu.label}
-                onClick={() => router.push(menu.path)}
-                className="w-full aspect-square bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-1.5"
+                type="button"
+                onClick={() => router.push('/claims')}
+                className="text-xs lg:text-sm text-fa-purple font-semibold hover:underline"
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{backgroundColor: menu.iconBg}}>
-                  {menu.icon(menu.iconColor)}
-                </div>
-                <span className="text-xs font-bold text-gray-600">{menu.label}</span>
+                전체보기 &gt;
               </button>
-            ))}
+            </div>
+
+            {claims.length === 0 ? (
+              <p className="text-center text-text-muted text-sm py-8">
+                청구 내역이 없습니다
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {claims.map((claim) => (
+                  <li
+                    key={claim.id}
+                    className="flex items-center gap-3 p-3 lg:p-4 bg-bg-subtle rounded-xl"
+                  >
+                    <span className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-menu-analysis-bg text-menu-analysis flex items-center justify-center shrink-0">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                      </svg>
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm lg:text-base font-semibold text-text-primary truncate">
+                        {claim.customer?.name ?? '고객'} 고객님
+                      </p>
+                      <p className="text-xs lg:text-sm text-text-muted truncate">
+                        {claim.accidentType ?? '청구'} · {claim.createdAt?.slice(0, 10) ?? '-'}
+                      </p>
+                    </div>
+                    <Badge
+                      variant={
+                        claim.status === 'PAID'
+                          ? 'success'
+                          : claim.status === 'SENT'
+                            ? 'review'
+                            : 'pending'
+                      }
+                    >
+                      {claim.status === 'PAID'
+                        ? '지급완료'
+                        : claim.status === 'SENT'
+                          ? '발송완료'
+                          : '임시저장'}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {/* 우측: 공지사항 + 학습 가이드 (세로 스택) */}
+          <div className="space-y-4 lg:space-y-6">
+            {/* 공지사항 */}
+            <section className="bg-bg-surface rounded-2xl border border-border shadow-card p-5 lg:p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-text-primary text-base lg:text-lg">공지사항</h2>
+                <button type="button" className="text-text-muted" aria-label="더보기">···</button>
+              </div>
+              <ul className="space-y-3">
+                <li className="flex items-center justify-between">
+                  <span className="text-sm lg:text-base text-text-primary truncate">개인정보 처리방침 개정 안내</span>
+                  <span className="text-xs lg:text-sm text-text-muted shrink-0 ml-2">11.24</span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span className="text-sm lg:text-base text-text-primary truncate">시스템 정기 점검 안내 (11/30)</span>
+                  <span className="text-xs lg:text-sm text-text-muted shrink-0 ml-2">11.22</span>
+                </li>
+              </ul>
+            </section>
+
+            {/* 학습 가이드 (보라/남색 박스) */}
+            <button
+              type="button"
+              onClick={() => router.push('/guide')}
+              className="block w-full text-left bg-fa-purple hover:bg-fa-purple-hover transition-colors rounded-2xl p-5 lg:p-6"
+            >
+              <div className="flex items-center justify-between">
+                <div className="text-white">
+                  <p className="font-bold mb-1 text-base lg:text-lg">학습 가이드</p>
+                  <p className="text-xs lg:text-sm text-white/80">
+                    {isAuthenticated ? '플랫폼 활용 팁 모음' : '미인증 설계사를 위한 이용 방법 총정리'}
+                  </p>
+                </div>
+                <span className="text-white shrink-0" aria-hidden="true">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                  </svg>
+                </span>
+              </div>
+            </button>
           </div>
         </div>
 
-        {/* 내 청구 현황 */}
-        {stats && (
-          <div className="bg-white rounded-2xl p-4">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="font-bold text-gray-900">내 청구 현황</h2>
-              <div className="flex border border-gray-200 rounded-lg overflow-hidden text-xs">
-                <button
-                  onClick={() => setActiveTab('my')}
-                  className={`px-3 py-1 ${activeTab === 'my' ? 'bg-gray-100 text-gray-800 font-semibold' : 'text-gray-400'}`}
-                >내 청구</button>
-                <div className="w-px bg-gray-200" />
-                <button
-                  onClick={() => setActiveTab('all')}
-                  className={`px-3 py-1 ${activeTab === 'all' ? 'bg-gray-100 text-gray-800 font-semibold' : 'text-gray-400'}`}
-                >전체 회원</button>
-              </div>
-            </div>
-            <div className="bg-blue-50 rounded-2xl p-4">
-              <StatsSummary stats={{ ...stats, monthlyAmounts: [8, 12, 6, 14, 10, 18, 22] }} />
-            </div>
-            <div className="flex justify-around mt-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-gray-900">{stats.total}<span className="text-sm font-normal">건</span></p>
-                <p className="text-xs text-gray-500">전체</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-blue-500">{stats.sent}<span className="text-sm font-normal">건</span></p>
-                <p className="text-xs text-gray-500">발송완료</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-500">{stats.paid}<span className="text-sm font-normal">건</span></p>
-                <p className="text-xs text-gray-500">지급완료</p>
-              </div>
-            </div>
+        {/* DEV: 인증 상태 토글 (개발 전용) */}
+        <div className="mt-6 p-3 bg-bg-subtle border border-dashed border-border rounded-xl text-xs text-text-muted max-w-md">
+          <p className="mb-2 font-semibold">🛠️ DEV: 인증 상태 토글</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setRole('authenticated')}
+              className={`px-3 py-1 rounded-md ${
+                isAuthenticated ? 'bg-fa-purple text-white' : 'bg-bg-surface border border-border'
+              }`}
+            >
+              인증 설계사
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole('unauthenticated')}
+              className={`px-3 py-1 rounded-md ${
+                isUnauthenticated ? 'bg-fa-purple text-white' : 'bg-bg-surface border border-border'
+              }`}
+            >
+              미인증 설계사
+            </button>
           </div>
-        )}
-
-        {/* 최근 청구 */}
-        <div className="bg-white rounded-2xl p-4">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="font-bold text-gray-900">최근 청구</h2>
-            <button onClick={() => router.push('/claims')} className="text-xs text-primary">더보기 &gt;</button>
-          </div>
-          {recentClaims.length === 0 ? (
-            <p className="text-center text-gray-400 py-4 text-sm">청구 내역이 없습니다</p>
-          ) : (
-            recentClaims.map((claim) => <ClaimCard key={claim.id} claim={claim} />)
-          )}
         </div>
       </div>
     </>

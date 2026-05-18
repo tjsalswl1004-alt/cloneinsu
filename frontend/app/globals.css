@@ -1,17 +1,87 @@
 @import "tailwindcss";
 
 @theme {
+  /* FIELDARENA Brand (navy) */
+  --color-fa-purple: #1E40AF;
+  --color-fa-purple-hover: #1E3A8A;
+  --color-fa-purple-light: #DBEAFE;
+
+  /* Menu Accent (4 categories) */
+  --color-menu-claim: #1E40AF;
+  --color-menu-claim-bg: #DBEAFE;
+  --color-menu-analysis: #059669;
+  --color-menu-analysis-bg: #D1FAE5;
+  --color-menu-review: #EA580C;
+  --color-menu-review-bg: #FFEDD5;
+  --color-menu-design: #F59E0B;
+  --color-menu-design-bg: #FEF3C7;
+
+  /* Surface */
+  --color-bg-main: #F8FAFC;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-subtle: #F1F5F9;
+
+  /* Text */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94A3B8;
+  --color-text-on-dark: #FFFFFF;
+
+  /* Border */
+  --color-border: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+
+  /* Badge (auth state) */
+  --color-badge-auth-bg: #DCFCE7;
+  --color-badge-auth-text: #15803D;
+  --color-badge-unauth-bg: #FFEDD5;
+  --color-badge-unauth-text: #C2410C;
+  --color-badge-banner-bg: #FFEDD5;
+  --color-badge-banner-text: #9A3412;
+
+  /* Social */
+  --color-kakao: #FEE500;
+  --color-kakao-text: #191919;
+  --color-naver: #03C75A;
+  --color-naver-text: #FFFFFF;
+
+  /* Status */
+  --color-status-pending: #FEF3C7;
+  --color-status-pending-text: #92400E;
+  --color-status-done: #D1FAE5;
+  --color-status-done-text: #065F46;
+  --color-status-review: #DBEAFE;
+  --color-status-review-text: #1E40AF;
+
+  /* Legacy (existing pages) */
   --color-primary: #4F6EF7;
   --color-primary-dark: #3B5BDB;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* Typography */
+  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+
+  /* Radius */
+  --radius-card: 1rem;
+  --radius-button: 0.625rem;
+
+  /* Shadow */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #F7F8FC;
-  color: #1a1a1a;
+  background-color: var(--color-bg-main);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
 }
 
 button {
   font-family: inherit;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
 }
