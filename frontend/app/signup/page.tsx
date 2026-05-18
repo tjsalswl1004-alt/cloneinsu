@@ -3,11 +3,10 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import axios from 'axios';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { authService } from '@/lib/api';
+import { ApiError, authService } from '@/lib/api';
 import type { UserRole } from '@/types';
 
 const EmailIcon = (
@@ -129,12 +128,11 @@ export default function SignupPage() {
       });
       setSuccess(true);
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const data = err.response?.data as { message?: string } | undefined;
-        if (err.response?.status === 409) {
-          setError(data?.message ?? '이미 사용 중인 이메일입니다.');
-        } else if (err.response?.status === 400) {
-          setError(data?.message ?? '입력값을 확인해주세요.');
+      if (err instanceof ApiError) {
+        if (err.status === 409) {
+          setError(err.message || '이미 사용 중인 이메일입니다.');
+        } else if (err.status === 400) {
+          setError(err.message || '입력값을 확인해주세요.');
         } else {
           setError('회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
         }

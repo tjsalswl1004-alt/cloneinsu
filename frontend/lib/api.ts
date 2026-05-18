@@ -1,36 +1,76 @@
-import axios from 'axios';
 import type { Claim, ClaimStats, InsuranceCompany, ClaimStatus } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const BASE = '/api';
 
-const api = axios.create({ baseURL: API_URL });
+export class ApiError extends Error {
+  readonly status: number;
+  readonly payload: unknown;
+
+  constructor(status: number, message: string, payload: unknown) {
+    super(message);
+    this.status = status;
+    this.payload = payload;
+    this.name = 'ApiError';
+  }
+}
+
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init.headers as Record<string, string> | undefined),
+    },
+  });
+
+  const text = await response.text();
+  const payload = text.length > 0 ? safeJsonParse(text) : null;
+
+  if (!response.ok) {
+    const message =
+      (payload && typeof payload === 'object' && 'message' in payload
+        ? String((payload as { message: unknown }).message)
+        : undefined) ?? response.statusText;
+    throw new ApiError(response.status, message, payload);
+  }
+
+  return payload as T;
+}
+
+function safeJsonParse(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
 
 export const claimService = {
   getAll: (status?: ClaimStatus): Promise<Claim[]> =>
-    api.get('/claims', { params: status ? { status } : {} }).then((r) => r.data),
+    request<Claim[]>(status ? `/claims?status=${encodeURIComponent(status)}` : '/claims'),
 
   getById: (id: number): Promise<Claim> =>
-    api.get(`/claims/${id}`).then((r) => r.data),
+    request<Claim>(`/claims/${id}`),
 
   create: (data: Partial<Claim>): Promise<Claim> =>
-    api.post('/claims', data).then((r) => r.data),
+    request<Claim>('/claims', { method: 'POST', body: JSON.stringify(data) }),
 
   update: (id: number, data: Partial<Claim>): Promise<Claim> =>
-    api.put(`/claims/${id}`, data).then((r) => r.data),
+    request<Claim>(`/claims/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
-  remove: (id: number) =>
-    api.delete(`/claims/${id}`),
+  remove: (id: number): Promise<void> =>
+    request<void>(`/claims/${id}`, { method: 'DELETE' }),
 
   getStats: (): Promise<ClaimStats> =>
-    api.get('/claims/stats').then((r) => r.data),
+    request<ClaimStats>('/claims/stats'),
 };
 
 export const insuranceCompanyService = {
   getAll: (): Promise<InsuranceCompany[]> =>
-    api.get('/insurance-companies').then((r) => r.data),
+    request<InsuranceCompany[]>('/insurance-companies'),
 
   getByCategory: (category: string): Promise<InsuranceCompany[]> =>
-    api.get('/insurance-companies', { params: { category } }).then((r) => r.data),
+    request<InsuranceCompany[]>(`/insurance-companies?category=${encodeURIComponent(category)}`),
 };
 
 export interface SignupRequest {
@@ -64,8 +104,8 @@ export interface LoginResponse {
 
 export const authService = {
   signup: (data: SignupRequest): Promise<SignupResponse> =>
-    api.post('/auth/signup', data).then((r) => r.data),
+    request<SignupResponse>('/auth/signup', { method: 'POST', body: JSON.stringify(data) }),
 
   login: (data: LoginRequestBody): Promise<LoginResponse> =>
-    api.post('/auth/login', data).then((r) => r.data),
+    request<LoginResponse>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
 };
