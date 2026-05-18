@@ -6,6 +6,7 @@ frontend/build/
 backend/build/
 backend/.gradle/
 backend/bin/
+backend/gradle.properties
 
 # root
 node_modules/
