@@ -2,6 +2,8 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 
+const HIDDEN_PATHS = ['/login', '/signup'];
+
 interface IconProps {
   color: string;
 }
@@ -46,44 +48,65 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { path: '/',                 label: '홈',      Icon: HomeIcon },
+  { path: '/',                 label: '홈',       Icon: HomeIcon },
   { path: '/claims',           label: '청구내역', Icon: ClaimsIcon },
-  { path: '/insurance-select', label: '',        isCenter: true },
-  { path: '/documents',        label: '서류안내', Icon: DocumentsIcon },
-  { path: '/settings',         label: '설정',    Icon: SettingsIcon },
+  { path: '/insurance-select', label: '',         isCenter: true },
+  { path: '/documents',        label: '서류',     Icon: DocumentsIcon },
+  { path: '/settings',         label: '설정',     Icon: SettingsIcon },
 ];
+
+const ACTIVE = '#1E40AF';
+const INACTIVE = '#94A3B8';
 
 export default function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
 
+  if (HIDDEN_PATHS.includes(pathname)) {
+    return null;
+  }
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex items-center justify-around h-16 max-w-lg mx-auto px-2 z-50">
-      {NAV_ITEMS.map((item) =>
-        item.isCenter ? (
-          <button
-            key={item.path}
-            onClick={() => router.push(item.path)}
-            className="w-14 h-14 bg-primary rounded-full flex items-center justify-center text-white shadow-lg -mt-4"
-          >
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-          </button>
-        ) : (
+    <nav
+      className="fixed bottom-0 left-0 right-0 bg-bg-surface border-t border-border z-50"
+      aria-label="하단 탭바"
+    >
+      <div className="max-w-lg mx-auto flex items-center justify-around h-16 px-2">
+        {NAV_ITEMS.map((item) => {
+        const isActive = pathname === item.path;
+        if (item.isCenter) {
+          return (
+            <button
+              key={item.path}
+              onClick={() => router.push(item.path)}
+              className="w-14 h-14 bg-fa-purple hover:bg-fa-purple-hover rounded-full flex items-center justify-center text-white shadow-lg -mt-4 transition-colors"
+              aria-label="새 청구"
+            >
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          );
+        }
+        return (
           <button
             key={item.path}
             onClick={() => router.push(item.path)}
             className="flex flex-col items-center gap-1"
           >
-            {item.Icon && <item.Icon color={pathname === item.path ? '#4F6EF7' : '#9CA3AF'} />}
-            <span className={`text-xs ${pathname === item.path ? 'text-primary font-semibold' : 'text-gray-400'}`}>
+            {item.Icon && <item.Icon color={isActive ? ACTIVE : INACTIVE} />}
+            <span
+              className={`text-xs ${
+                isActive ? 'text-fa-purple font-semibold' : 'text-text-muted'
+              }`}
+            >
               {item.label}
             </span>
           </button>
-        )
-      )}
+        );
+      })}
+      </div>
     </nav>
   );
 }

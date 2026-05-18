@@ -32,3 +32,40 @@ export const insuranceCompanyService = {
   getByCategory: (category: string): Promise<InsuranceCompany[]> =>
     api.get('/insurance-companies', { params: { category } }).then((r) => r.data),
 };
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+  passwordConfirm: string;
+  name: string;
+  phone: string;
+  company: string;
+}
+
+export interface SignupResponse {
+  id: number;
+  email: string;
+  name: string;
+  role: 'UNAUTHENTICATED' | 'AUTHENTICATED' | 'ADMIN';
+}
+
+export interface LoginRequestBody {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  id: number;
+  email: string;
+  name: string;
+  role: 'UNAUTHENTICATED' | 'AUTHENTICATED' | 'ADMIN';
+  verified: boolean;
+}
+
+export const authService = {
+  signup: (data: SignupRequest): Promise<SignupResponse> =>
+    api.post('/auth/signup', data).then((r) => r.data),
+
+  login: (data: LoginRequestBody): Promise<LoginResponse> =>
+    api.post('/auth/login', data).then((r) => r.data),
+};
